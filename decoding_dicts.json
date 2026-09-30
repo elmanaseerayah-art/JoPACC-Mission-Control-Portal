@@ -1,0 +1,46 @@
+{
+  "activity_decoding": {
+    "0": "Low Activity",
+    "1": "Normal Activity",
+    "2": "High Activity"
+  },
+  "activity_mapping": {
+    "Low Activity": 0,
+    "Normal Activity": 1,
+    "High Activity": 2
+  },
+  "regression_features": [
+    "month",
+    "report_year",
+    "transactions_total",
+    "users_total",
+    "customer_legal_entity_count",
+    "wallet_commercial_count",
+    "tx_money_transfers_count",
+    "ef_digital_payment_count",
+    "ach_jod_transaction_count",
+    "returned_cheque_count",
+    "system_ACH",
+    "system_CliQ",
+    "system_ECCU",
+    "system_JoMoPay",
+    "system_eFAWATEERcom"
+  ],
+  "classification_features": [
+    "month",
+    "report_year",
+    "transactions_total",
+    "users_total",
+    "customer_legal_entity_count",
+    "wallet_commercial_count",
+    "tx_money_transfers_count",
+    "ef_digital_payment_count",
+    "ach_jod_transaction_count",
+    "returned_cheque_count",
+    "system_ACH",
+    "system_CliQ",
+    "system_ECCU",
+    "system_JoMoPay",
+    "system_eFAWATEERcom"
+  ]
+}

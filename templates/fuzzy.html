@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>
+        JoMoPay Growth Quality Evaluator
+    </title>
+
+    <style>
+
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+        }
+
+        input {
+            width: 300px;
+            padding: 6px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        .box {
+            margin-top: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+        }
+
+        .error {
+            color: red;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <h2>
+        JoMoPay Growth Quality Evaluator
+    </h2>
+
+
+    <p>
+        This fuzzy system evaluates whether the current
+        growth of JoMoPay is fragile, unbalanced, healthy,
+        or sustainable.
+    </p>
+
+
+    <form method="POST">
+
+        <label>
+            Total Transaction Activity
+        </label>
+
+        <input
+            type="number"
+            name="transaction_activity"
+            step="any"
+            min="1"
+            required
+        >
+
+
+        <label>
+            Commercial Wallet Count
+        </label>
+
+        <input
+            type="number"
+            name="commercial_wallets"
+            step="any"
+            min="0"
+            required
+        >
+
+
+        <label>
+            Cash-Out Transaction Count
+        </label>
+
+        <input
+            type="number"
+            name="cash_out_count"
+            step="any"
+            min="0"
+            required
+        >
+
+
+        <br>
+
+
+        <button type="submit">
+            Evaluate Growth Quality
+        </button>
+
+    </form>
+
+
+    {% if error %}
+
+        <div class="box error">
+
+            <h3>
+                Error
+            </h3>
+
+            <p>
+                {{ error }}
+            </p>
+
+        </div>
+
+    {% endif %}
+
+
+    {% if result %}
+
+        <div class="box">
+
+            <h3>
+                Fuzzy Evaluation Result
+            </h3>
+
+
+            <p>
+
+                <strong>
+                    Growth Quality Score:
+                </strong>
+
+                {{ result.growth_quality_score }}
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Growth Quality Level:
+                </strong>
+
+                {{ result.growth_quality_level }}
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Cash-Out Dependency:
+                </strong>
+
+                {{ result.cash_out_dependency }}%
+
+            </p>
+
+
+            <h4>
+                Activated Rules
+            </h4>
+
+
+            {% if result.activated_rules %}
+
+                <ul>
+
+                    {% for activated_rule in result.activated_rules %}
+
+                        <li>
+
+                            {{ activated_rule.rule }}
+
+                            <br>
+
+                            Activation Strength:
+
+                            {{ activated_rule.strength }}
+
+                        </li>
+
+                        <br>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <p>
+                    No fuzzy rules were activated.
+                </p>
+
+            {% endif %}
+
+
+            <h4>
+                Explanation
+            </h4>
+
+            <p>
+                {{ result.explanation }}
+            </p>
+
+        </div>
+
+    {% endif %}
+
+
+    <a href="{{ url_for('home') }}">
+        Return to Mission Control Portal
+    </a>
+
+</body>
+
+</html>

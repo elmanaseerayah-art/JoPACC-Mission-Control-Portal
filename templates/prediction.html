@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>JoPACC Mission Control</title>
+</head>
+
+<body>
+
+    <h1>JoPACC Mission Control</h1>
+
+    <!-- Portal Tools -->
+
+    <a href="{{ url_for('rl_simulator') }}">
+        <button type="button">
+            Open RL Intervention Simulator
+        </button>
+    </a>
+
+    <a href="{{ url_for('fuzzy_evaluator') }}">
+        <button type="button">
+            Open Fuzzy Growth Quality Evaluator
+        </button>
+    </a>
+
+    <br><br>
+
+    <!-- User Input Form -->
+
+    <form method="POST">
+
+        <label>Payment System:</label>
+        <br>
+
+        <select name="system" required>
+            <option value="CliQ">CliQ</option>
+            <option value="JoMoPay">JoMoPay</option>
+            <option value="eFAWATEERcom">eFAWATEERcom</option>
+            <option value="ACH">ACH</option>
+            <option value="ECCU">ECCU</option>
+        </select>
+
+        <br><br>
+
+        {% for feature in input_features %}
+
+            <label>
+                {{ feature.replace("_", " ").title() }}:
+            </label>
+
+            <br>
+
+            <input
+                type="number"
+                step="any"
+                name="{{ feature }}"
+                required
+            >
+
+            <br><br>
+
+        {% endfor %}
+
+        <button type="submit">
+            Validate and Predict
+        </button>
+
+    </form>
+
+
+    <!-- General Error -->
+
+    {% if error %}
+
+        <hr>
+
+        <h2>Error</h2>
+
+        <p>
+            {{ error }}
+        </p>
+
+    {% endif %}
+
+
+    <!-- Anomaly Validation Information -->
+
+    {% if anomaly_label %}
+
+        <hr>
+
+        <h1>Anomaly-Based Input Validation</h1>
+
+        <p>
+            <b>Anomaly Label:</b>
+            {{ anomaly_label }}
+        </p>
+
+        {% if anomaly_score is not none %}
+
+            <p>
+                <b>Anomaly Score:</b>
+
+                {{ "{:.4f}".format(
+                    anomaly_score
+                ) }}
+            </p>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    <!-- Anomalous Input Result -->
+
+    {% if anomaly_label == "Anomalous Input" %}
+
+        <h2>
+            Prediction Blocked
+        </h2>
+
+        <p>
+            The entered values are substantially different
+            from the normal training-data patterns. The
+            prediction was therefore blocked.
+        </p>
+
+
+        {% if unusual_features %}
+
+            <h3>
+                Most Unusual Features
+            </h3>
+
+            <ul>
+
+                {% for item in unusual_features %}
+
+                    <li>
+
+                        <b>
+                            {{ item["feature"].replace(
+                                "_",
+                                " "
+                            ).title() }}
+                        </b>
+
+                        <br>
+
+                        Entered value:
+
+                        {{ "{:,.2f}".format(
+                            item["value"]
+                        ) }}
+
+                        <br>
+
+                        Standardized distance:
+
+                        {{ "{:.2f}".format(
+                            item["standardized_value"]
+                        ) }}
+
+                        <br>
+
+                        Reason:
+
+                        {{ item["reason"] }}
+
+                    </li>
+
+                    <br>
+
+                {% endfor %}
+
+            </ul>
+
+        {% endif %}
+
+
+        {% if anomaly_explanation %}
+
+            <h3>
+                Anomaly Explanation
+            </h3>
+
+            <p>
+                {{ anomaly_explanation }}
+            </p>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    <!-- Normal Input Result -->
+
+    {% if anomaly_label == "Normal Input" %}
+
+        <hr>
+
+        <h1>Prediction Results</h1>
+
+
+        <h2>
+            Predicted Transaction Value
+        </h2>
+
+        <p>
+            {{ "{:,.2f}".format(
+                regression_prediction
+            ) }} JOD
+        </p>
+
+
+        <h2>
+            Predicted Activity Level
+        </h2>
+
+        <p>
+            {{ classification_prediction }}
+        </p>
+
+
+        <h2>
+            Classification Probability
+        </h2>
+
+        <p>
+            {{ "{:.2%}".format(
+                classification_probability
+            ) }}
+        </p>
+
+
+        <!-- Regression SHAP Explanation -->
+
+        <hr>
+
+        <h2>
+            Regression SHAP Explanation
+        </h2>
+
+
+        <h3>
+            Features Increasing the Predicted Value
+        </h3>
+
+        {% if regression_shap_increased %}
+
+            <ul>
+
+                {% for item in regression_shap_increased %}
+
+                    <li>
+
+                        {{ item["feature"] }}:
+
+                        {{ "{:,.2f}".format(
+                            item["contribution"]
+                        ) }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                No features increased the regression prediction.
+            </p>
+
+        {% endif %}
+
+
+        <h3>
+            Features Reducing the Predicted Value
+        </h3>
+
+        {% if regression_shap_reduced %}
+
+            <ul>
+
+                {% for item in regression_shap_reduced %}
+
+                    <li>
+
+                        {{ item["feature"] }}:
+
+                        {{ "{:,.2f}".format(
+                            item["contribution"]
+                        ) }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                No features reduced the regression prediction.
+            </p>
+
+        {% endif %}
+
+
+        <!-- Regression LIME Explanation -->
+
+        <hr>
+
+        <h2>
+            Regression LIME Explanation
+        </h2>
+
+
+        <h3>
+            Features Increasing the Predicted Value
+        </h3>
+
+        {% if regression_lime_increased %}
+
+            <ul>
+
+                {% for item in regression_lime_increased %}
+
+                    <li>
+
+                        {{ item["feature"] }}:
+
+                        {{ "{:,.2f}".format(
+                            item["contribution"]
+                        ) }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                No features increased the regression prediction.
+            </p>
+
+        {% endif %}
+
+
+        <h3>
+            Features Reducing the Predicted Value
+        </h3>
+
+        {% if regression_lime_reduced %}
+
+            <ul>
+
+                {% for item in regression_lime_reduced %}
+
+                    <li>
+
+                        {{ item["feature"] }}:
+
+                        {{ "{:,.2f}".format(
+                            item["contribution"]
+                        ) }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                No features reduced the regression prediction.
+            </p>
+
+        {% endif %}
+
+
+        <!-- Classification SHAP Explanation -->
+
+        <hr>
+
+        <h2>
+            Classification SHAP Explanation
+        </h2>
+
+
+        <h3>
+            Features Increasing the Predicted Class
+        </h3>
+
+        {% if classification_shap_increased %}
+
+            <ul>
+
+                {% for item in classification_shap_increased %}
+
+                    <li>
+
+                        {{ item["feature"] }}:
+
+                        {{ "{:,.4f}".format(
+                            item["contribution"]
+                        ) }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                No features increased the classification output.
+            </p>
+
+        {% endif %}
+
+
+        <h3>
+            Features Reducing the Predicted Class
+        </h3>
+
+        {% if classification_shap_reduced %}
+
+            <ul>
+
+                {% for item in classification_shap_reduced %}
+
+                    <li>
+
+                        {{ item["feature"] }}:
+
+                        {{ "{:,.4f}".format(
+                            item["contribution"]
+                        ) }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                No features reduced the classification output.
+            </p>
+
+        {% endif %}
+
+
+        <!-- Classification LIME Explanation -->
+
+        <hr>
+
+        <h2>
+            Classification LIME Explanation
+        </h2>
+
+
+        <h3>
+            Features Increasing the Predicted Class
+        </h3>
+
+        {% if classification_lime_increased %}
+
+            <ul>
+
+                {% for item in classification_lime_increased %}
+
+                    <li>
+
+                        {{ item["feature"] }}:
+
+                        {{ "{:,.4f}".format(
+                            item["contribution"]
+                        ) }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                No features increased the classification output.
+            </p>
+
+        {% endif %}
+
+
+        <h3>
+            Features Reducing the Predicted Class
+        </h3>
+
+        {% if classification_lime_reduced %}
+
+            <ul>
+
+                {% for item in classification_lime_reduced %}
+
+                    <li>
+
+                        {{ item["feature"] }}:
+
+                        {{ "{:,.4f}".format(
+                            item["contribution"]
+                        ) }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                No features reduced the classification output.
+            </p>
+
+        {% endif %}
+
+
+        <!-- LLM Explanations -->
+
+        <hr>
+
+        <h2>
+            LLM Regression Explanation
+        </h2>
+
+        {% if regression_llm_explanation %}
+
+            <p>
+                {{ regression_llm_explanation }}
+            </p>
+
+        {% else %}
+
+            <p>
+                No regression LLM explanation is available.
+            </p>
+
+        {% endif %}
+
+
+        <h2>
+            LLM Classification Explanation
+        </h2>
+
+        {% if classification_llm_explanation %}
+
+            <p>
+                {{ classification_llm_explanation }}
+            </p>
+
+        {% else %}
+
+            <p>
+                No classification LLM explanation is available.
+            </p>
+
+        {% endif %}
+
+
+        {% if llm_error %}
+
+            <h3>
+                LLM Error
+            </h3>
+
+            <p>
+                {{ llm_error }}
+            </p>
+
+        {% endif %}
+
+    {% endif %}
+
+</body>
+
+</html>

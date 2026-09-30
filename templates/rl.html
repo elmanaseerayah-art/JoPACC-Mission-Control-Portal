@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>
+        JoPACC Intervention Simulator
+    </title>
+
+</head>
+
+
+<body>
+
+    <h1>
+        JoPACC Intervention Simulator
+    </h1>
+
+
+    <p>
+        Selected Policy:
+        <strong>
+            {{ best_policy_name }}
+        </strong>
+    </p>
+
+
+    <form
+        method="POST"
+        action="{{ url_for('rl_simulator') }}"
+    >
+
+        <label>
+            Payment System:
+        </label>
+
+        <br>
+
+        <select
+            name="system"
+            id="system"
+            required
+        >
+
+            {% for system in systems %}
+
+                <option
+                    value="{{ system }}"
+
+                    {% if system == selected_system %}
+                        selected
+                    {% endif %}
+                >
+
+                    {{ system }}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <br><br>
+
+
+        <label>
+            Current Activity Level:
+        </label>
+
+        <br>
+
+        <select
+            name="activity"
+            required
+        >
+
+            {% for activity in activity_levels %}
+
+                <option
+                    value="{{ activity }}"
+
+                    {% if activity == selected_activity %}
+                        selected
+                    {% endif %}
+                >
+
+                    {{ activity }}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <br><br>
+
+
+        <div id="feature-fields">
+
+            {% for system, features in system_features.items() %}
+
+                <div
+                    class="system-fields"
+                    id="fields-{{ system }}"
+                >
+
+                    {% for feature in features %}
+
+                        <label>
+                            {{ feature.replace("_", " ").title() }}:
+                        </label>
+
+                        <br>
+
+                        <input
+                            type="number"
+                            step="any"
+                            min="0"
+                            name="{{ feature }}"
+                        >
+
+                        <br><br>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <label>
+            Available Intervention Budget:
+        </label>
+
+        <br>
+
+        <input
+            type="number"
+            step="any"
+            min="0"
+            name="budget"
+            required
+        >
+
+
+        <p>
+            The budget is measured in simulated budget units.
+        </p>
+
+
+        <button type="submit">
+
+            Get Intervention Recommendation
+
+        </button>
+
+    </form>
+
+
+    {% if error %}
+
+        <h2>
+            Error
+        </h2>
+
+        <p>
+            {{ error }}
+        </p>
+
+    {% endif %}
+
+
+    {% if recommendation_sequence %}
+
+        <hr>
+
+
+        <h2>
+            Recommended Intervention Sequence
+        </h2>
+
+
+        {% for result in recommendation_sequence %}
+
+            <h3>
+                Step {{ result.step }}
+            </h3>
+
+
+            {% if result.current_state %}
+
+                <h4>
+                    Current State
+                </h4>
+
+                <ul>
+
+                    {% for feature, value in result.current_state.items() %}
+
+                        <li>
+                            {{ feature.replace("_", " ").title() }}:
+                            {{ value }}
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% endif %}
+
+
+            <p>
+                <strong>
+                    Recommended Action:
+                </strong>
+
+                {{ result.recommended_action }}
+            </p>
+
+
+            {% if result.next_state %}
+
+                <h4>
+                    Next Simulated State
+                </h4>
+
+                <ul>
+
+                    {% for feature, value in result.next_state.items() %}
+
+                        <li>
+                            {{ feature.replace("_", " ").title() }}:
+                            {{ value }}
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% endif %}
+
+
+            <p>
+                <strong>
+                    Reward:
+                </strong>
+
+                {{ result.reward }}
+            </p>
+
+
+            <p>
+                <strong>
+                    Intervention Cost:
+                </strong>
+
+                {{ result.intervention_cost }}
+                simulated budget units
+            </p>
+
+
+            <p>
+                <strong>
+                    Remaining Budget:
+                </strong>
+
+                {{ result.remaining_budget }}
+                simulated budget units
+            </p>
+
+            <hr>
+
+        {% endfor %}
+
+
+        <h3>
+            Important Simulation Notice
+        </h3>
+
+        <p>
+            {{ simulation_note }}
+        </p>
+
+    {% endif %}
+
+
+    <br>
+
+
+    <a href="{{ url_for('home') }}">
+
+        Return to Mission Control Portal
+
+    </a>
+
+
+    <script>
+
+        const systemSelect =
+            document.getElementById("system");
+
+
+        function showSelectedSystemFields() {
+
+            const selectedSystem =
+                systemSelect.value;
+
+
+            const fieldGroups =
+                document.querySelectorAll(
+                    ".system-fields"
+                );
+
+
+            fieldGroups.forEach(
+                function(group) {
+
+                    const isSelected =
+                        group.id ===
+                        "fields-" + selectedSystem;
+
+
+                    group.style.display =
+                        isSelected
+                        ? "block"
+                        : "none";
+
+
+                    const inputs =
+                        group.querySelectorAll(
+                            "input"
+                        );
+
+
+                    inputs.forEach(
+                        function(input) {
+
+                            input.required =
+                                isSelected;
+
+                            input.disabled =
+                                !isSelected;
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+
+
+        systemSelect.addEventListener(
+            "change",
+            showSelectedSystemFields
+        );
+
+
+        showSelectedSystemFields();
+
+    </script>
+
+</body>
+
+</html>
